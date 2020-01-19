@@ -1,1 +1,1 @@
-# inear_regression
+# linear_regression
