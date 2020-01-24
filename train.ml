@@ -25,27 +25,33 @@ let rec sum data = match data with
 
 let average data = (sum data) /. float_of_int (List.length data)
 
-let min_max data =
-    let max = List.hd (List.sort inf data) in
+let min_max data max =
     let rec loop tail = match tail with
         | [] -> []
         | (x::xs) -> [x /. max] @ loop xs
     in loop data
 
+let print_me t0 t1 x d =
+    if d = true then printf "Round %5i -> Teta0: %.10f -- Teta1: %.10f\n" x t0 t1
+    else ()
+
 let () =
+    let (p, round, rd, d) = Parse.args() in
     let data = Parse.parse in_file in
     let maxk = List.hd (List.sort inf (filter data 1)) in
     let maxp = List.hd (List.sort inf (filter data 2)) in
-    let rd = 1. in
-    let km_list = min_max (filter data 1) in
-    let price_list = min_max (filter data 2) in
-    for i = 0 to 1000 do
+    let km_list = min_max (filter data 1) maxk in
+    let price_list = min_max (filter data 2) maxp in
+    let rec loop x =
         let tmp0 = rd *. average (List.map2 grad0 km_list price_list) in
         let tmp1 = rd *. average (List.map2 grad1 km_list price_list) in
         tet0 := !tet0 -. tmp0;
         tet1 := !tet1 -. tmp1;
-    done;
-        printf "%f %f\n" !tet0 !tet1;
+        print_me (!tet0 *. maxp) (!tet1 *. (maxp /. maxk)) x d;
+        if tmp0 < p && tmp0 > (-.p) && tmp1 < p && tmp1 > (-.p) then ()
+        else if x >= round then ()
+        else loop (x + 1)
+    in loop 0;
     let oc = try open_out out_file with Sys_error e -> Parse.error e in
     fprintf oc "Tet0,Tet1\n%f,%f" (!tet0 *. maxp) (!tet1 *. (maxp /. maxk));
     close_out oc

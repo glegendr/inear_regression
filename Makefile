@@ -43,5 +43,10 @@ fclean: clean
 	rm -f $(NAME1).byt $(NAME2).byt
 	rm -f $(NAME1).opt $(NAME2).opt
 
+dclean: clean
+	rm -f *.csv
+
+dfclean: fclean
+	rm -f *.csv
 
 re: fclean all
